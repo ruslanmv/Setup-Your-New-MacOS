@@ -1,10 +1,3 @@
-Of course. Based on the previous fixes for CLI instability and script robustness, here is the improved and more resilient version of your full macOS installation script.
-
-This updated script includes more robust checks and clearer user feedback, especially around the crucial Homebrew installation, to prevent common errors.
-
-### `install_from_zero_revised.sh`
-
-```bash
 #!/usr/bin/env bash
 # Make the script exit on any error, and on unset variables
 set -euo pipefail
@@ -194,4 +187,3 @@ info "🎉 Setup complete! 🚀"
 info "Please restart your terminal (or run 'exec zsh') to ensure all changes are applied."
 
 exit 0
-```
