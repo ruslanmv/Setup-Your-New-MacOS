@@ -187,6 +187,7 @@ To keep your VS Code extensions synchronized between machines:
 
 
 This will install every extension listed in `extensions.txt`, skipping blank lines and comments, and show you a success or failure indicator for each.
+![](assets/2025-07-07-15-08-47.png)
 
 ---
 

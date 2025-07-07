@@ -24,9 +24,10 @@ confirm() {
   # $1 = prompt message
   while true; do
     read -rp "$1 [Y/n] " yn
-    case "${yn,,}" in
-      y|"") return 0;;
-      n)    return 1;;
+    case "$yn" in
+      [Yy]|"") return 0 ;;
+      [Nn])    return 1 ;;
+      *)       printf "Please answer Y or N.\n" ;;
     esac
   done
 }
@@ -44,11 +45,10 @@ success() {
 # --- 1. Xcode Command-Line Tools ---
 if confirm "Install Xcode Command-Line Tools?"; then
   info "Checking for Xcode Command-Line Tools..."
-  # Check if they are already installed to avoid the pop-up
   if ! xcode-select -p &>/dev/null; then
     info "Starting installation... Please click 'Install' in the system dialog."
     xcode-select --install
-    
+
     info "Waiting for installation to complete..."
     until xcode-select -p &>/dev/null; do
       sleep 5
@@ -57,40 +57,35 @@ if confirm "Install Xcode Command-Line Tools?"; then
   success "Xcode Command-Line Tools are installed."
 fi
 
----
-
 # --- 2. Homebrew ---
 if ! command -v brew &>/dev/null; then
   if confirm "Install Homebrew?"; then
     info "Installing Homebrew..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    
+
     # Configure shell for Homebrew based on architecture
-    if [[ "$(uname -m)" == "arm64" ]]; then # Apple Silicon
+    if [[ "$(uname -m)" == "arm64" ]]; then
       BREW_PREFIX="/opt/homebrew"
-    else # Intel
+    else
       BREW_PREFIX="/usr/local"
     fi
-    
+
     info "Adding Homebrew to your shell profile..."
-    # Add the shellenv command to .zprofile if it's not already there
     grep -qxF "eval \"\$(${BREW_PREFIX}/bin/brew shellenv)\"" ~/.zprofile \
       || printf "\neval \"\$(${BREW_PREFIX}/bin/brew shellenv)\"\n" >> ~/.zprofile
-    
+
     # Add Homebrew to the current shell session
     eval "$(${BREW_PREFIX}/bin/brew shellenv)"
   fi
 fi
 
-# --- CRITICAL CHECK: Verify Homebrew is ready ---
+# CRITICAL CHECK: Verify Homebrew is ready
 if ! command -v brew &>/dev/null; then
   info "❌ Homebrew is not available in your PATH. Please restart your terminal and run the script again."
   exit 1
 else
   success "Homebrew is installed and in your PATH."
 fi
-
----
 
 # --- 3. Core Packages & Runtimes ---
 info "Updating Homebrew and all formulas. This might take a few minutes..."
@@ -99,7 +94,6 @@ brew update
 # 3a. Python 3.12
 if confirm "Install Python 3.12?"; then
   brew install python@3.12
-  # `brew link` is often not needed, as Homebrew adds a symlink to python3
   success "Python installed. Version: $(python3 --version)"
 fi
 
@@ -112,11 +106,11 @@ if confirm "Install nvm & Node.js 20?"; then
     echo 'export NVM_DIR="$HOME/.nvm"'
     echo '[ -s "$(brew --prefix nvm)/nvm.sh" ] && . "$(brew --prefix nvm)/nvm.sh"'
   } >> ~/.zprofile
-  
+
   # Source the just-added lines to use nvm in this session
   export NVM_DIR="$HOME/.nvm"
   source "$(brew --prefix nvm)/nvm.sh"
-  
+
   nvm install 20
   nvm alias default 20
   success "Node.js installed. Version: $(node -v) | npm version: $(npm -v)"
@@ -134,8 +128,6 @@ if confirm "Install handy Unix tools (htop, tree, jq, wget)?"; then
   success "Unix utilities installed."
 fi
 
----
-
 # --- 4. Terminal Enhancements ---
 # 4a. Nerd Font (for icons and symbols)
 if confirm "Install MesloLGS Nerd Font?"; then
@@ -151,8 +143,6 @@ if confirm "Install Starship prompt?"; then
     || echo 'eval "$(starship init zsh)"' >> ~/.zshrc
   info "Starship installed. It will be active the next time you open a terminal."
 fi
-
----
 
 # --- 5. GUI Applications ---
 info "Now installing selected GUI applications..."
@@ -175,8 +165,6 @@ if confirm "Install Rectangle, Raycast, Insomnia, and Maccy?"; then
   brew install --cask rectangle raycast insomnia maccy
   info "Productivity apps installed. Launch them from Applications to configure."
 fi
-
----
 
 # --- 6. Final System Check ---
 if confirm "Run 'brew doctor' to check for any remaining issues?"; then
