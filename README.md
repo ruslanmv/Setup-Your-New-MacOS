@@ -3,7 +3,7 @@
 Getting a new Mac ready for development can feel like a chore. This guide streamlines the process, taking you from a fresh macOS installation to a fully-equipped development environment. We'll use Homebrew to manage our packages, set up essential runtimes like Python and Node.js, and install powerful tools like VS Code and a suite of productivity-boosting applications.
 
 
-T he first step is give a Good looking  appareance of our Terminal in Unix.
+The first step is give a Good looking  appareance of our Terminal in Unix.
 
 1. **Open Terminal Preferences**
 
