@@ -41,8 +41,7 @@ T he first step is give a Good looking  appareance of our Terminal in Unix.
 > **Note:** These steps only change the appearance settings (“profiles”)—they do not alter any shell behavior or commands.
 
 and now when you open your terminal you will have the appropiate terminal colors 
-
-![](assets/2025-07-07-15-42-18.png)
+![](assets/2025-07-07-15-45-11.png)
 
 **Quick Install (Copy & Paste)**
 
