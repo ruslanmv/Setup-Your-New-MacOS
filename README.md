@@ -2,6 +2,48 @@
 
 Getting a new Mac ready for development can feel like a chore. This guide streamlines the process, taking you from a fresh macOS installation to a fully-equipped development environment. We'll use Homebrew to manage our packages, set up essential runtimes like Python and Node.js, and install powerful tools like VS Code and a suite of productivity-boosting applications.
 
+
+T he first step is give a Good looking  appareance of our Terminal in Unix.
+
+1. **Open Terminal Preferences**
+
+   * Launch Terminal (⌘ Space → type “Terminal” → ↵).
+   * From the menu bar, choose **Terminal → Preferences…** (or press ⌘ ,).
+
+2. **Select the “Homebrew” Profile**
+
+   * In the Preferences window, click the **Profiles** tab (in older macOS versions this may be called “Settings”).
+   * In the list on the left, scroll down and click **Homebrew**.
+
+3. **Set Andale Mono, 18 pt**
+
+   * With **Homebrew** highlighted, look in the right-hand pane under **Text**.
+   * Next to **Font**, click the **Change…** button.
+   * In the font picker that appears:
+
+     1. Choose **Andale Mono** from the font list.
+     2. Set the size to **18**.
+     3. Click **OK** (or **Done**).
+
+4. **Make Homebrew the Default Profile**
+
+   * At the bottom of the Profiles list (left side), click the **Default** button.
+
+     > This tells Terminal to use **Homebrew** (with your newly chosen font) for all future windows and tabs.
+![](assets/2025-07-07-15-41-13.png)
+
+
+
+5. **Close Preferences**
+
+   * Simply close the Preferences window. From now on, every new Terminal session (window or tab) will open with the Homebrew color scheme and Andale Mono 18 pt font.
+
+> **Note:** These steps only change the appearance settings (“profiles”)—they do not alter any shell behavior or commands.
+
+and now when you open your terminal you will have the appropiate terminal colors 
+
+![](assets/2025-07-07-15-42-18.png)
+
 **Quick Install (Copy & Paste)**
 
 For the impatient, here’s the one-liner to bootstrap Homebrew. But read on for important details and post-install steps to get everything running smoothly.
