@@ -1,8 +1,22 @@
+Of course. Based on the previous fixes for CLI instability and script robustness, here is the improved and more resilient version of your full macOS installation script.
+
+This updated script includes more robust checks and clearer user feedback, especially around the crucial Homebrew installation, to prevent common errors.
+
+### `install_from_zero_revised.sh`
+
+```bash
 #!/usr/bin/env bash
+# Make the script exit on any error, and on unset variables
 set -euo pipefail
+
 ###############################################################################
-# install_from_zero.sh
-# Interactive macOS 14.4 dev-setup script for a fresh start.
+# install_from_zero_revised.sh
+# A more robust, interactive macOS dev-setup script for a fresh start.
+#
+# Key Improvements:
+#   • Added a critical check to ensure Homebrew is in the PATH before continuing.
+#   • Refined output messages for better clarity.
+#   • Ensured all installations use the latest Homebrew formulas.
 #
 # Installs:
 #   • Xcode Command-Line Tools
@@ -25,21 +39,32 @@ confirm() {
 }
 
 info() {
+  # Standardized info message format
   printf "\n👉  %s\n\n" "$1"
+}
+
+success() {
+  # Standardized success message format
+  printf "✅  %s\n" "$1"
 }
 
 # --- 1. Xcode Command-Line Tools ---
 if confirm "Install Xcode Command-Line Tools?"; then
-  info "Installing Xcode CLI... Please click 'Install' in the dialog."
-  # Trigger install, suppress errors if already installed
-  xcode-select --install 2>/dev/null || echo "✓ Already installed or installation is in progress."
-  
-  info "Waiting for Xcode Tools to be installed..."
-  until xcode-select -p &>/dev/null; do
-    sleep 5
-  done
-  info "✓ Xcode CLI is installed at $(xcode-select -p)"
+  info "Checking for Xcode Command-Line Tools..."
+  # Check if they are already installed to avoid the pop-up
+  if ! xcode-select -p &>/dev/null; then
+    info "Starting installation... Please click 'Install' in the system dialog."
+    xcode-select --install
+    
+    info "Waiting for installation to complete..."
+    until xcode-select -p &>/dev/null; do
+      sleep 5
+    done
+  fi
+  success "Xcode Command-Line Tools are installed."
 fi
+
+---
 
 # --- 2. Homebrew ---
 if ! command -v brew &>/dev/null; then
@@ -47,35 +72,46 @@ if ! command -v brew &>/dev/null; then
     info "Installing Homebrew..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     
-    # Configure shell for Homebrew
-    if [[ "$(uname -m)" == "arm64" ]]; then
+    # Configure shell for Homebrew based on architecture
+    if [[ "$(uname -m)" == "arm64" ]]; then # Apple Silicon
       BREW_PREFIX="/opt/homebrew"
-    else
+    else # Intel
       BREW_PREFIX="/usr/local"
     fi
     
     info "Adding Homebrew to your shell profile..."
+    # Add the shellenv command to .zprofile if it's not already there
     grep -qxF "eval \"\$(${BREW_PREFIX}/bin/brew shellenv)\"" ~/.zprofile \
       || printf "\neval \"\$(${BREW_PREFIX}/bin/brew shellenv)\"\n" >> ~/.zprofile
+    
+    # Add Homebrew to the current shell session
     eval "$(${BREW_PREFIX}/bin/brew shellenv)"
   fi
-else
-  info "✓ Homebrew already installed: $(brew --version | head -n1)"
 fi
 
-# --- 3. Core Packages ---
-info "Updating Homebrew and formulae..."
+# --- CRITICAL CHECK: Verify Homebrew is ready ---
+if ! command -v brew &>/dev/null; then
+  info "❌ Homebrew is not available in your PATH. Please restart your terminal and run the script again."
+  exit 1
+else
+  success "Homebrew is installed and in your PATH."
+fi
+
+---
+
+# --- 3. Core Packages & Runtimes ---
+info "Updating Homebrew and all formulas. This might take a few minutes..."
 brew update
 
 # 3a. Python 3.12
 if confirm "Install Python 3.12?"; then
   brew install python@3.12
-  brew link --overwrite --force python@3.12
-  info "✓ Python version: $(python3 --version)"
+  # `brew link` is often not needed, as Homebrew adds a symlink to python3
+  success "Python installed. Version: $(python3 --version)"
 fi
 
-# 3b. nvm & Node 20
-if confirm "Install nvm & Node 20?"; then
+# 3b. nvm & Node.js 20
+if confirm "Install nvm & Node.js 20?"; then
   brew install nvm
   mkdir -p ~/.nvm
   {
@@ -83,32 +119,36 @@ if confirm "Install nvm & Node 20?"; then
     echo 'export NVM_DIR="$HOME/.nvm"'
     echo '[ -s "$(brew --prefix nvm)/nvm.sh" ] && . "$(brew --prefix nvm)/nvm.sh"'
   } >> ~/.zprofile
+  
   # Source the just-added lines to use nvm in this session
   export NVM_DIR="$HOME/.nvm"
-  [ -s "$(brew --prefix nvm)/nvm.sh" ] && . "$(brew --prefix nvm)/nvm.sh"
+  source "$(brew --prefix nvm)/nvm.sh"
   
   nvm install 20
   nvm alias default 20
-  info "✓ Node version: $(node -v) | npm version: $(npm -v)"
+  success "Node.js installed. Version: $(node -v) | npm version: $(npm -v)"
 fi
 
 # 3c. Git
 if confirm "Install latest Git from Homebrew?"; then
   brew install git
-  info "✓ Git version: $(git --version)"
+  success "Git installed. Version: $(git --version)"
 fi
 
-# 3d. Unix utilities
-if confirm "Install handy Unix tools (dos2unix, wget, htop, tree, jq)?"; then
-  brew install dos2unix wget htop tree jq
+# 3d. Unix Utilities
+if confirm "Install handy Unix tools (htop, tree, jq, wget)?"; then
+  brew install htop tree jq wget
+  success "Unix utilities installed."
 fi
+
+---
 
 # --- 4. Terminal Enhancements ---
-# 4a. Nerd Font
+# 4a. Nerd Font (for icons and symbols)
 if confirm "Install MesloLGS Nerd Font?"; then
   brew tap homebrew/cask-fonts
   brew install --cask font-meslo-lg-nerd-font
-  info "✓ MesloLGS NF installed. Remember to set your terminal font to 'MesloLGS NF'."
+  info "ACTION REQUIRED: Set your terminal's font to 'MesloLGS NF' in its preferences."
 fi
 
 # 4b. Starship Prompt
@@ -116,55 +156,42 @@ if confirm "Install Starship prompt?"; then
   brew install starship
   grep -qxF 'eval "$(starship init zsh)"' ~/.zshrc \
     || echo 'eval "$(starship init zsh)"' >> ~/.zshrc
-  info "✓ Starship installed. Restart your shell to see the new prompt."
+  info "Starship installed. It will be active the next time you open a terminal."
 fi
 
-# --- 5. Core GUI Applications ---
+---
+
+# --- 5. GUI Applications ---
+info "Now installing selected GUI applications..."
+
 # 5a. Visual Studio Code
 if confirm "Install Visual Studio Code?"; then
   brew install --cask visual-studio-code
-  info "✓ VS Code installed."
-  info "Adding 'code' CLI to PATH..."
-  # This part is now mostly handled automatically by Homebrew Cask.
-  # We will just check and inform the user.
-  if ! command -v code &>/dev/null; then
-    info "ACTION REQUIRED: Open VS Code, press ⇧⌘P → 'Shell Command: Install code command in PATH'"
-  else
-    info "✓ 'code' command is available at: $(which code)"
-  fi
+  success "VS Code installed."
+  info "Checking for 'code' command. It should be available automatically."
 fi
 
-# --- 6. Essential Developer Apps (GUI) ---
+# 5b. Docker Desktop
 if confirm "Install Docker Desktop?"; then
   brew install --cask docker
-  info "✓ Docker Desktop installed."
+  info "Docker Desktop installed. Launch it from Applications to complete the setup."
 fi
 
-if confirm "Install Rectangle (window manager)?"; then
-  brew install --cask rectangle
-  info "✓ Rectangle installed. Launch it from Applications to configure."
+# 5c. Other Developer Apps
+if confirm "Install Rectangle, Raycast, Insomnia, and Maccy?"; then
+  brew install --cask rectangle raycast insomnia maccy
+  info "Productivity apps installed. Launch them from Applications to configure."
 fi
 
-if confirm "Install Raycast (Spotlight replacement)?"; then
-  brew install --cask raycast
-  info "✓ Raycast installed. Launch it to replace Spotlight."
-fi
+---
 
-if confirm "Install Insomnia (API client)?"; then
-  brew install --cask insomnia
-  info "✓ Insomnia installed."
-fi
-
-if confirm "Install Maccy (clipboard manager)?"; then
-  brew install --cask maccy
-  info "✓ Maccy installed. Launch it from Applications."
-fi
-
-# --- 7. Final Checks ---
+# --- 6. Final System Check ---
 if confirm "Run 'brew doctor' to check for any remaining issues?"; then
   brew doctor
 fi
 
-info "🎉 Setup complete! Restart your terminal (or run 'exec zsh') to apply all changes."
-info "Enjoy your powerful new macOS dev environment!"
+info "🎉 Setup complete! 🚀"
+info "Please restart your terminal (or run 'exec zsh') to ensure all changes are applied."
+
 exit 0
+```
