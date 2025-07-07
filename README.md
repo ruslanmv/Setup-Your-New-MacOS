@@ -304,6 +304,6 @@ Beyond the command line, a few GUI applications can dramatically improve your wo
 ---
 
 
-Here there is a single, self-contained Bash script—[**install.sh**](https://github.com/ruslanmv/Setup-Your-New-MacOS/blob/main/install..sh) that will walk you through every step interactively. Just download it, make it executable, and run it.
+Here there is a single, self-contained Bash script—[**install.sh**](https://github.com/ruslanmv/Setup-Your-New-MacOS/blob/main/install.sh) that will walk you through every step interactively. Just download it, make it executable, and run it.
 
 You’re now fully equipped with a modern macOS 14.4 development setup. You have Homebrew-managed runtimes, a powerful zsh prompt, VS Code integrated with your shell, isolated Python environments, and a suite of best-in-class GUI tools. Happy coding!
