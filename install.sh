@@ -155,9 +155,31 @@ if confirm "Install Visual Studio Code?"; then
 fi
 
 # 5b. Docker Desktop
-if confirm "Install Docker Desktop?"; then
-  brew install --cask docker
-  info "Docker Desktop installed. Launch it from Applications to complete the setup."
+#if confirm "Install Docker Desktop?"; then
+#  brew install --cask docker
+#  info "Docker Desktop installed. Launch it from Applications to complete the setup."
+#fi
+
+# 5b. Docker for Terminal (using Colima)
+if confirm "Install Docker for Terminal (using Colima)?"; then
+  info "Installing Colima and the Docker CLI... 📦"
+  
+  # Install Colima and the Docker CLI using Homebrew
+  if brew install colima docker; then
+    info "Colima and Docker CLI installed successfully!"
+    info "Starting the Colima virtual machine... 🚀"
+    info "This may take a few minutes on the first run."
+
+    # Start the Colima VM to enable Docker
+    if colima start; then
+      info "✅ Docker environment is ready! You can now use 'docker' commands in your terminal."
+      info "Test it by running 'docker ps'."
+    else
+      error "Failed to start Colima. Please run 'colima start' manually to diagnose the issue."
+    fi
+  else
+    error "Failed to install Colima or the Docker CLI via Homebrew."
+  fi
 fi
 
 # 5c. Other Developer Apps
